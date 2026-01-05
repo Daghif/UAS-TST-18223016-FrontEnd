@@ -8,7 +8,7 @@ Aplikasi web Review Buku modern yang dibangun menggunakan Vanilla JavaScript dan
 
 ---
 
-## 📋 Fitur Utama
+## Fitur Utama
 
 ### 1. Otentikasi & Keamanan
 - **Login & Register:** Sistem otentikasi menggunakan **JWT (JSON Web Token)**.
@@ -49,17 +49,16 @@ Fitur unggulan yang mengambil data dari sumber eksternal **tanpa membebani backe
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+##  Teknologi yang Digunakan
 
 - **Core:** HTML5, CSS3, JavaScript (ES6+).
 - **Styling:** Custom CSS dengan CSS Variables untuk theming konsisten.
-- **Icons:** [FontAwesome 6.0](https://fontawesome.com/) (CDN).
 - **HTTP Client:** Fetch API (Native Browser).
 - **Deployment:** [Vercel](https://vercel.com/) (Static Site Hosting).
 
 ---
 
-## 🚀 Integrasi API
+## Integrasi API
 
 Frontend ini menghubungkan **dua layanan API** yang berbeda:
 
