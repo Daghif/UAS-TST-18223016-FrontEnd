@@ -3,298 +3,510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookSocial + Library Integration</title>
+    <title>BookSocial: Integrated Library</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2c3e50;
+            --primary: #34495e;
+            --accent: #27ae60; 
             --secondary: #e67e22;
-            --accent: #3498db;
-            --bg: #f4f7f6;
-            --card-bg: #ffffff;
+            --bg: #f8f9fa;
+            --text: #2c3e50;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
-            color: #333;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
 
-        /* Navbar */
+        /* HEADER */
         .navbar {
-            background-color: var(--primary);
-            color: white;
-            padding: 1rem 2rem;
+            background: white; padding: 1rem 5%; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100;
+        }
+        .navbar h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
+        .auth-section { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .auth-section button { cursor: pointer; font-size: 0.85rem; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-primary:hover { background: #2c3e50; }
+        .btn-accent { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-accent:hover { background: #219150; }
+        .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 8px 18px; border-radius: 4px; cursor: pointer; }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--secondary); color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .btn-secondary:hover { background: #d35400; }
+        .btn-purple { background: #9b59b6; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .btn-purple:hover { background: #8e44ad; }
+
+        /* User Info */
+        .user-info {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            gap: 10px;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 25px;
         }
-
-        .navbar h1 { margin: 0; font-size: 1.5rem; }
-        .badge { background: var(--secondary); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
-
-        /* Main Layout */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .intro {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #555;
-        }
-
-        /* Grid System */
-        .book-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        /* Card Style */
-        .book-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-            border-left: 5px solid var(--accent);
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 50%;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-
-        .book-title {
-            font-size: 1.25rem;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .user-name {
+            font-weight: 600;
             color: var(--primary);
         }
 
-        .book-author {
-            color: #7f8c8d;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
+        /* GRID BUKU */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
+
+        /* KARTU BUKU */
+        .card {
+            background: white; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-5px); }
+        
+        .card-header { padding: 20px; border-bottom: 1px solid #eee; }
+        .book-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        .book-meta { font-size: 0.9rem; color: #7f8c8d; }
+
+        /* ACTIONS BAR */
+        .actions { 
+            display: flex; border-top: 1px solid #eee; background: #fdfdfd; 
+            justify-content: space-around; padding: 10px 0;
+        }
+        .action-btn { 
+            background: none; border: none; color: #666; cursor: pointer; 
+            font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .action-btn:hover { color: var(--secondary); }
+        .action-btn:disabled { color: #ccc; cursor: not-allowed; }
+
+        /* REVIEWS SECTION */
+        .reviews-container {
+            padding: 15px; background: #fafafa; border-top: 1px solid #eee;
+            max-height: 200px; overflow-y: auto; font-size: 0.9rem; display: none;
+        }
+        .review-item { 
+            background: white; padding: 10px; border-radius: 6px; margin-bottom: 10px; 
+            border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .review-user { font-weight: bold; font-size: 0.8rem; color: var(--primary); }
+        .stars { color: #f1c40f; }
+
+        /* PARTNER INTEGRATION */
+        .partner-check {
+            padding: 10px 20px; background: #e8f6f3; color: #16a085;
+            font-size: 0.9rem; border-top: 1px dashed #a2d9ce; text-align: center;
         }
 
-        .divider {
-            border-top: 1px dashed #ddd;
-            margin: 10px 0;
+        /* MODALS (Review & Shelf) */
+        .modal {
+            display: none; position: fixed; top:0; left:0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center;
+        }
+        .modal-content { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 8px; }
+        .modal textarea { width: 100%; height: 80px; margin: 10px 0; box-sizing: border-box; }
+        .close-modal { float: right; cursor: pointer; font-size: 1.5rem; }
+
+        /* Notifikasi */
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: #333; color: white;
+            padding: 12px 24px; border-radius: 4px; display: none; z-index: 2000;
         }
 
-        /* Integration Status Section */
-        .integration-status {
-            background-color: #f8f9fa;
+        /* Loading State */
+        .loading-container {
+            text-align: center; padding: 50px; color: #7f8c8d;
+        }
+        .loading-container i { font-size: 2rem; margin-bottom: 10px; }
+
+        /* Login Required Notice */
+        .login-notice {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px 20px;
             border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
+        .login-notice i { margin-right: 10px; }
+        .login-notice-buttons { display: flex; gap: 10px; }
 
-        .status-label { font-weight: bold; display: block; margin-bottom: 5px; }
-        
-        .stock-tag {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            color: white;
-            font-size: 0.8rem;
+        /* Section Title */
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
         }
-        
-        .stock-available { background-color: #27ae60; }
-        .stock-empty { background-color: #c0392b; }
-        .stock-checking { background-color: #f39c12; }
-        .stock-error { background-color: #95a5a6; }
-
-        /* Button */
-        .btn-check {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: 600;
-            transition: background 0.3s;
+        .section-title h3 {
+            margin: 0;
+            color: var(--primary);
         }
-
-        .btn-check:hover { background-color: #34495e; }
-
-        .loading { text-align: center; padding: 2rem; font-size: 1.2rem; }
-
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <h1>📚 BookSocial <span style="font-weight:300">+ AyamJago Lib</span></h1>
-        <span class="badge">Integration Demo (Tugas 3)</span>
+        <h1>📚 BookSocial <small style="font-weight: normal; font-size: 0.9rem;">+ Integrasi AyamJago</small></h1>
+        <div class="auth-section" id="auth-section">
+            <!-- Will be filled by JS -->
+        </div>
     </nav>
 
     <div class="container">
-        <div class="intro">
-            <h3>Integrasi Layanan Perpustakaan</h3>
-            <p>Daftar di bawah ini mengambil data dari <b>Layanan Pribadi (BookSocial)</b>, kemudian melakukan pengecekan ketersediaan stok secara <i>real-time</i> ke <b>Layanan Mitra (Perpustakaan Ayam Jago)</b>.</p>
+        <!-- Login Notice (shown when not logged in) -->
+        <div id="login-notice" class="login-notice" style="display: none;">
+            <div>
+                <i class="fas fa-info-circle"></i>
+                <span>Login untuk menulis review, menyimpan koleksi, dan fitur lainnya!</span>
+            </div>
+            <div class="login-notice-buttons">
+                <button class="btn-outline" onclick="window.location.href='login.html'">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button class="btn-accent" onclick="window.location.href='register.html'">
+                    <i class="fas fa-user-plus"></i> Daftar
+                </button>
+            </div>
         </div>
 
-        <div id="loading" class="loading">Sedang memuat data buku...</div>
-        <div id="book-container" class="book-grid">
+        <!-- KATALOG BUKU -->
+        <div class="section-title">
+            <h3>📖 Katalog & Review Komunitas</h3>
+        </div>
+        <div id="book-grid" class="grid">
+            <div class="loading-container">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Memuat katalog buku...</p>
             </div>
+        </div>
     </div>
 
+    <div id="review-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('review-modal')">&times;</span>
+            <h3>Tulis Review</h3>
+            <input type="hidden" id="review-book-id">
+            <label>Rating:</label>
+            <select id="review-rating" style="padding: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4)</option>
+                <option value="3">⭐⭐⭐ (3)</option>
+                <option value="2">⭐⭐ (2)</option>
+                <option value="1">⭐ (1)</option>
+            </select>
+            <textarea id="review-comment" placeholder="Bagaimana pendapatmu tentang buku ini?"></textarea>
+            <button class="btn-primary" style="width: 100%;" onclick="submitReview()">Kirim Review</button>
+        </div>
+    </div>
+
+    <div id="shelf-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('shelf-modal')">&times;</span>
+            <h3>Tambah ke Koleksi</h3>
+            <p>Pilih Rak Buku Anda:</p>
+            <select id="shelf-select" style="width: 100%; padding: 8px; margin-bottom: 15px;">
+                <option>Loading shelves...</option>
+            </select>
+            <input type="hidden" id="shelf-book-id">
+            <button class="btn-primary" style="width: 100%;" onclick="submitToShelf()">Simpan ke Rak</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Action Success!</div>
+
     <script>
-        // ============================================
-        // 1. KONFIGURASI API (SESUAIKAN DI SINI)
-        // ============================================
-        
-        // Ganti dengan IP STB / Server Docker Anda
-        const MY_SERVICE_URL = 'http://thegift.theokaitou.my.id/api';      // API BookSocial (18223016)
-        const PARTNER_SERVICE_URL = 'http://arya.theokaitou.my.id/api'; // API Ayam Jago (18223068)
-        
-        // ============================================
-        // 2. LOGIKA UTAMA
-        // ============================================
+        // ================= CONFIGURATION =================
+        const MY_API = 'https://thegift.theokaitou.my.id/api';
+        const PARTNER_API = 'http://arya.theokaitou.my.id/api';
+        let token = localStorage.getItem('token');
+        let isLoggedIn = !!token;
+        // =================================================
 
-        // Saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchMyBooks();
-        });
+        // --- AUTH LOGIC ---
+        function setupAuth() {
+            const authSection = document.getElementById('auth-section');
+            const loginNotice = document.getElementById('login-notice');
 
-        // Fungsi 1: Ambil data buku dari Service Sendiri (BookSocial)
-        async function fetchMyBooks() {
+            if (isLoggedIn) {
+                const userName = localStorage.getItem('userName') || 'User';
+                const userInitial = userName.charAt(0).toUpperCase();
+                
+                authSection.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">${userInitial}</div>
+                        <span class="user-name">${userName}</span>
+                    </div>
+                    <button class="btn-secondary" onclick="window.location.href='my-reviews.html'">
+                        <i class="fas fa-star"></i> Review Saya
+                    </button>
+                    <button class="btn-purple" onclick="window.location.href='my-shelves.html'">
+                        <i class="fas fa-bookmark"></i> Koleksi Saya
+                    </button>
+                    <button class="btn-primary" style="background: #c0392b;" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                `;
+                loginNotice.style.display = 'none';
+            } else {
+                authSection.innerHTML = `
+                    <button class="btn-outline" onclick="window.location.href='login.html'">Login</button>
+                    <button class="btn-accent" onclick="window.location.href='register.html'">Daftar</button>
+                `;
+                loginNotice.style.display = 'flex';
+            }
+
+            loadBooks();
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
+            window.location.reload();
+        }
+
+        // --- MAIN LOGIC ---
+        async function loadBooks() {
             try {
-                // Mengambil daftar buku (Catalog Context)
-                const response = await fetch(`${MY_SERVICE_URL}/books`);
-                if (!response.ok) throw new Error('Gagal mengambil data buku lokal');
-                
-                const result = await response.json();
-                
-                // Handling format data (sesuaikan dengan output API Anda: array langsung atau object wrapper)
-                // Asumsi API Anda mengembalikan array atau object { data: [] }
-                const books = Array.isArray(result) ? result : (result.data || []);
-                
-                renderBooks(books);
-            } catch (error) {
-                document.getElementById('loading').innerHTML = `
-                    <div style="color: red;">
-                        Error: ${error.message}. <br>Pastikan API BookSocial (Port 9494/3000) sudah berjalan.
-                    </div>`;
+                const res = await fetch(`${MY_API}/books`);
+                const books = await res.json();
+                const container = document.getElementById('book-grid');
+                container.innerHTML = '';
+
+                const bookList = Array.isArray(books) ? books : (books.data || []);
+
+                if (bookList.length === 0) {
+                    container.innerHTML = '<p style="color:#999; text-align:center;">Belum ada buku di katalog.</p>';
+                    return;
+                }
+
+                for (const book of bookList) {
+                    const detailRes = await fetch(`${MY_API}/books/${book.id}`);
+                    const detail = await detailRes.json();
+                    renderCard(detail, container);
+                }
+            } catch(e) { 
+                console.error(e);
+                document.getElementById('book-grid').innerHTML = '<p style="color:#c0392b; text-align:center;">Gagal memuat katalog buku.</p>';
             }
         }
 
-        // Fungsi 2: Render Kartu Buku ke HTML
-        function renderBooks(books) {
-            const container = document.getElementById('book-container');
-            const loader = document.getElementById('loading');
-            
-            loader.style.display = 'none';
-            container.innerHTML = '';
+        function renderCard(book, container) {
+            const reviewsHtml = book.reviews && book.reviews.length > 0 
+                ? book.reviews.map(r => `
+                    <div class="review-item">
+                        <div class="review-user">${r.reviewer || 'Anonim'} <span class="stars">${'★'.repeat(r.rating)}</span></div>
+                        <div>"${r.comment}"</div>
+                    </div>`).join('')
+                : '<div style="padding:10px; color:#999; font-style:italic;">Belum ada ulasan. Jadilah yang pertama!</div>';
 
-            if (books.length === 0) {
-                container.innerHTML = '<p style="text-align:center; width:100%">Tidak ada buku ditemukan.</p>';
+            const disabledAttr = isLoggedIn ? '' : 'disabled title="Login untuk menggunakan fitur ini"';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="book-title">${book.title}</div>
+                    <div class="book-author">by ${book.author}</div>
+                    <div style="font-size:0.8rem; margin-top:5px; color:#888;">${book.total_pages || '?'} Halaman</div>
+                </div>
+
+                <div class="partner-check" id="stock-${book.id}">
+                    <i class="fas fa-store"></i> 
+                    <a href="#" onclick="checkPartnerStock('${book.title.replace(/'/g, "\\'")}', ${book.id}); return false;" style="color:inherit; text-decoration:none; font-weight:bold;">
+                        Cek Ketersediaan di Perpus Kampus
+                    </a>
+                </div>
+
+                <div class="actions">
+                    <button class="action-btn" ${disabledAttr} onclick="openReviewModal(${book.id}, '${book.title.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-pen"></i> Review
+                    </button>
+                    <button class="action-btn" ${disabledAttr} onclick="openShelfModal(${book.id})">
+                        <i class="fas fa-bookmark"></i> Koleksi
+                    </button>
+                    <button class="action-btn" onclick="toggleReviews(${book.id})">
+                        <i class="fas fa-comments"></i> Lihat Ulasan
+                    </button>
+                    <button class="action-btn" onclick="shareBook('${book.title.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+
+                <div id="reviews-${book.id}" class="reviews-container">
+                    ${reviewsHtml}
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        // --- INTERACTION LOGIC ---
+        function toggleReviews(id) {
+            const el = document.getElementById(`reviews-${id}`);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function checkPartnerStock(title, domId) {
+            const dom = document.getElementById(`stock-${domId}`);
+            dom.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghubungi Perpustakaan Ayam Jago...';
+            
+            try {
+                const res = await fetch(`${PARTNER_API}/books?search=${encodeURIComponent(title)}`);
+                const data = await res.json();
+                const found = (data.data || []).find(b => b.title.toLowerCase().includes(title.toLowerCase()));
+
+                if(found && found.stock > 0) {
+                    dom.innerHTML = `<span style="color:#27ae60"><i class="fas fa-check-circle"></i> Tersedia (${found.stock}) di Rak Fisik</span>`;
+                } else if (found) {
+                    dom.innerHTML = `<span style="color:#e74c3c"><i class="fas fa-times-circle"></i> Stok Fisik Habis</span>`;
+                } else {
+                    dom.innerHTML = `<span style="color:#95a5a6"><i class="fas fa-question-circle"></i> Tidak ada di katalog fisik</span>`;
+                }
+            } catch(e) {
+                dom.innerHTML = '<span style="color:#e74c3c">Gagal koneksi ke Mitra.</span>';
+            }
+        }
+
+        function openReviewModal(id, title) {
+            if (!isLoggedIn) {
+                showToast('Silakan login terlebih dahulu!');
+                return;
+            }
+            document.getElementById('review-book-id').value = id;
+            document.getElementById('review-comment').value = '';
+            document.getElementById('review-modal').style.display = 'flex';
+        }
+
+        async function submitReview() {
+            if (!isLoggedIn) return;
+
+            const book_id = document.getElementById('review-book-id').value;
+            const rating = document.getElementById('review-rating').value;
+            const comment = document.getElementById('review-comment').value;
+
+            if (!comment.trim()) {
+                alert('Komentar tidak boleh kosong!');
                 return;
             }
 
-            books.forEach(book => {
-                const card = document.createElement('div');
-                card.className = 'book-card';
-                card.innerHTML = `
-                    <div>
-                        <div class="book-title">${book.title}</div>
-                        <div class="book-author">Oleh: ${book.author}</div>
-                        <div style="font-size: 0.85rem; color: #666;">
-                            Halaman: ${book.total_pages || '-'} | ID Lokal: ${book.id}
-                        </div>
-                    </div>
-                    
-                    <div class="divider"></div>
-
-                    <div class="integration-status">
-                        <span class="status-label">📦 Status di Perpus Mitra:</span>
-                        <div id="stock-status-${book.id}">
-                            <button onclick="checkPartnerStock('${book.title.replace(/'/g, "\\'")}', ${book.id})" class="btn-check">
-                                🔍 Cek Ketersediaan
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            try {
+                const res = await fetch(`${MY_API}/reviews`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ book_id, rating: parseInt(rating), comment })
+                });
+                
+                if(res.ok) {
+                    showToast('Review berhasil dikirim!');
+                    closeModal('review-modal');
+                    window.location.reload();
+                } else {
+                    const d = await res.json();
+                    alert(d.error || 'Gagal kirim review');
+                }
+            } catch(e) { alert('Error network'); }
         }
 
-        // Fungsi 3: Integrasi ke Service Teman (Perpustakaan Ayam Jago)
-        async function checkPartnerStock(bookTitle, domId) {
-            const statusDiv = document.getElementById(`stock-status-${domId}`);
-            
-            // Tampilkan loading state
-            statusDiv.innerHTML = '<span class="stock-tag stock-checking">Menghubungi Server Mitra...</span>';
+        async function openShelfModal(bookId) {
+            if (!isLoggedIn) {
+                showToast('Silakan login terlebih dahulu!');
+                return;
+            }
+
+            document.getElementById('shelf-book-id').value = bookId;
+            const select = document.getElementById('shelf-select');
+            select.innerHTML = '<option>Loading...</option>';
+            document.getElementById('shelf-modal').style.display = 'flex';
 
             try {
-                // Melakukan pencarian ke API teman berdasarkan judul
-                // Menggunakan endpoint /api/books?search=...
-                const encodedTitle = encodeURIComponent(bookTitle);
-                const response = await fetch(`${PARTNER_SERVICE_URL}/books?search=${encodedTitle}`);
+                const res = await fetch(`${MY_API}/shelves`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const shelves = await res.json();
                 
-                if (!response.ok) throw new Error('Mitra Offline');
-
-                const data = await response.json();
-                const foundBooks = data.data || []; // Asumsi struktur data teman: { status: 'success', data: [] }
-
-                // Logika pencocokan (mencari judul yang paling mirip)
-                // Karena endpoint search teman mungkin mengembalikan banyak buku
-                const exactMatch = foundBooks.find(b => 
-                    b.title.toLowerCase().includes(bookTitle.toLowerCase()) || 
-                    bookTitle.toLowerCase().includes(b.title.toLowerCase())
-                );
-
-                if (exactMatch) {
-                    const stock = exactMatch.stock;
-                    if (stock > 0) {
-                        statusDiv.innerHTML = `
-                            <span class="stock-tag stock-available">✅ Tersedia (${stock} stok)</span>
-                            <div style="margin-top:5px; font-size:0.8rem; color:green;">
-                                Dapat dipinjam di Perpustakaan Ayam Jago.
-                            </div>
-                        `;
-                    } else {
-                        statusDiv.innerHTML = `
-                            <span class="stock-tag stock-empty">❌ Stok Habis</span>
-                            <div style="margin-top:5px; font-size:0.8rem;">
-                                Buku terdaftar tapi sedang dipinjam semua.
-                            </div>
-                        `;
-                    }
+                select.innerHTML = '';
+                if(shelves.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.text = "Belum ada rak (Buat dulu di halaman Koleksi)";
+                    opt.disabled = true;
+                    select.add(opt);
                 } else {
-                    statusDiv.innerHTML = `
-                        <span class="stock-tag stock-error">⚠️ Tidak Ditemukan</span>
-                        <div style="margin-top:5px; font-size:0.8rem;">
-                            Buku ini belum ada di katalog mitra.
-                        </div>
-                    `;
+                    shelves.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.text = s.name;
+                        select.add(opt);
+                    });
                 }
+            } catch(e) { select.innerHTML = '<option>Error loading shelves</option>'; }
+        }
 
-            } catch (error) {
-                console.error(error);
-                statusDiv.innerHTML = `
-                    <span class="stock-tag stock-error">🚫 Gagal Koneksi</span>
-                    <div style="margin-top:5px; font-size:0.8rem; color:red;">
-                        Tidak dapat menghubungi API Mitra.
-                    </div>
-                `;
+        async function submitToShelf() {
+            if (!isLoggedIn) return;
+
+            const shelfId = document.getElementById('shelf-select').value;
+            const bookId = document.getElementById('shelf-book-id').value;
+
+            if(!shelfId || isNaN(shelfId)) return alert('Pilih rak yang valid atau buat rak baru dulu di halaman Koleksi');
+
+            try {
+                const res = await fetch(`${MY_API}/shelves/${shelfId}/add`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ book_id: bookId })
+                });
+
+                if(res.ok) {
+                    showToast('Buku berhasil disimpan ke koleksi!');
+                    closeModal('shelf-modal');
+                } else {
+                    alert('Gagal menyimpan buku');
+                }
+            } catch(e) { alert('Error network'); }
+        }
+
+        function shareBook(title) {
+            const text = `Saya baru saja melihat buku "${title}" di BookSocial! Cek reviewnya di sini.`;
+            if (navigator.share) {
+                navigator.share({ title: 'BookSocial Review', text: text, url: window.location.href });
+            } else {
+                alert(`[Simulasi Share ke Twitter/WA]\n\n"${text}"\n\n(Link telah disalin ke clipboard)`);
             }
         }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        // Start
+        setupAuth();
     </script>
 </body>
 </html>
