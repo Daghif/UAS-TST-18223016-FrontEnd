@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookSocial + Library Integration</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e67e22;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: #333;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 { margin: 0; font-size: 1.5rem; }
+        .badge { background: var(--secondary); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
+
+        /* Main Layout */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #555;
+        }
+
+        /* Grid System */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Card Style */
+        .book-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            border-left: 5px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .book-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .book-author {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .divider {
+            border-top: 1px dashed #ddd;
+            margin: 10px 0;
+        }
+
+        /* Integration Status Section */
+        .integration-status {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-label { font-weight: bold; display: block; margin-bottom: 5px; }
+        
+        .stock-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        .stock-available { background-color: #27ae60; }
+        .stock-empty { background-color: #c0392b; }
+        .stock-checking { background-color: #f39c12; }
+        .stock-error { background-color: #95a5a6; }
+
+        /* Button */
+        .btn-check {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-check:hover { background-color: #34495e; }
+
+        .loading { text-align: center; padding: 2rem; font-size: 1.2rem; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>📚 BookSocial <span style="font-weight:300">+ AyamJago Lib</span></h1>
+        <span class="badge">Integration Demo (Tugas 3)</span>
+    </nav>
+
+    <div class="container">
+        <div class="intro">
+            <h3>Integrasi Layanan Perpustakaan</h3>
+            <p>Daftar di bawah ini mengambil data dari <b>Layanan Pribadi (BookSocial)</b>, kemudian melakukan pengecekan ketersediaan stok secara <i>real-time</i> ke <b>Layanan Mitra (Perpustakaan Ayam Jago)</b>.</p>
+        </div>
+
+        <div id="loading" class="loading">Sedang memuat data buku...</div>
+        <div id="book-container" class="book-grid">
+            </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 1. KONFIGURASI API (SESUAIKAN DI SINI)
+        // ============================================
+        
+        // Ganti dengan IP STB / Server Docker Anda
+        const MY_SERVICE_URL = 'http://thegift.theokaitou.my.id/api';      // API BookSocial (18223016)
+        const PARTNER_SERVICE_URL = 'http://arya.theokaitou.my.id/api'; // API Ayam Jago (18223068)
+        
+        // ============================================
+        // 2. LOGIKA UTAMA
+        // ============================================
+
+        // Saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMyBooks();
+        });
+
+        // Fungsi 1: Ambil data buku dari Service Sendiri (BookSocial)
+        async function fetchMyBooks() {
+            try {
+                // Mengambil daftar buku (Catalog Context)
+                const response = await fetch(`${MY_SERVICE_URL}/books`);
+                if (!response.ok) throw new Error('Gagal mengambil data buku lokal');
+                
+                const result = await response.json();
+                
+                // Handling format data (sesuaikan dengan output API Anda: array langsung atau object wrapper)
+                // Asumsi API Anda mengembalikan array atau object { data: [] }
+                const books = Array.isArray(result) ? result : (result.data || []);
+                
+                renderBooks(books);
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: red;">
+                        Error: ${error.message}. <br>Pastikan API BookSocial (Port 9494/3000) sudah berjalan.
+                    </div>`;
+            }
+        }
+
+        // Fungsi 2: Render Kartu Buku ke HTML
+        function renderBooks(books) {
+            const container = document.getElementById('book-container');
+            const loader = document.getElementById('loading');
+            
+            loader.style.display = 'none';
+            container.innerHTML = '';
+
+            if (books.length === 0) {
+                container.innerHTML = '<p style="text-align:center; width:100%">Tidak ada buku ditemukan.</p>';
+                return;
+            }
+
+            books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div>
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">Oleh: ${book.author}</div>
+                        <div style="font-size: 0.85rem; color: #666;">
+                            Halaman: ${book.total_pages || '-'} | ID Lokal: ${book.id}
+                        </div>
+                    </div>
+                    
+                    <div class="divider"></div>
+
+                    <div class="integration-status">
+                        <span class="status-label">📦 Status di Perpus Mitra:</span>
+                        <div id="stock-status-${book.id}">
+                            <button onclick="checkPartnerStock('${book.title.replace(/'/g, "\\'")}', ${book.id})" class="btn-check">
+                                🔍 Cek Ketersediaan
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Fungsi 3: Integrasi ke Service Teman (Perpustakaan Ayam Jago)
+        async function checkPartnerStock(bookTitle, domId) {
+            const statusDiv = document.getElementById(`stock-status-${domId}`);
+            
+            // Tampilkan loading state
+            statusDiv.innerHTML = '<span class="stock-tag stock-checking">Menghubungi Server Mitra...</span>';
+
+            try {
+                // Melakukan pencarian ke API teman berdasarkan judul
+                // Menggunakan endpoint /api/books?search=...
+                const encodedTitle = encodeURIComponent(bookTitle);
+                const response = await fetch(`${PARTNER_SERVICE_URL}/books?search=${encodedTitle}`);
+                
+                if (!response.ok) throw new Error('Mitra Offline');
+
+                const data = await response.json();
+                const foundBooks = data.data || []; // Asumsi struktur data teman: { status: 'success', data: [] }
+
+                // Logika pencocokan (mencari judul yang paling mirip)
+                // Karena endpoint search teman mungkin mengembalikan banyak buku
+                const exactMatch = foundBooks.find(b => 
+                    b.title.toLowerCase().includes(bookTitle.toLowerCase()) || 
+                    bookTitle.toLowerCase().includes(b.title.toLowerCase())
+                );
+
+                if (exactMatch) {
+                    const stock = exactMatch.stock;
+                    if (stock > 0) {
+                        statusDiv.innerHTML = `
+                            <span class="stock-tag stock-available">✅ Tersedia (${stock} stok)</span>
+                            <div style="margin-top:5px; font-size:0.8rem; color:green;">
+                                Dapat dipinjam di Perpustakaan Ayam Jago.
+                            </div>
+                        `;
+                    } else {
+                        statusDiv.innerHTML = `
+                            <span class="stock-tag stock-empty">❌ Stok Habis</span>
+                            <div style="margin-top:5px; font-size:0.8rem;">
+                                Buku terdaftar tapi sedang dipinjam semua.
+                            </div>
+                        `;
+                    }
+                } else {
+                    statusDiv.innerHTML = `
+                        <span class="stock-tag stock-error">⚠️ Tidak Ditemukan</span>
+                        <div style="margin-top:5px; font-size:0.8rem;">
+                            Buku ini belum ada di katalog mitra.
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerHTML = `
+                    <span class="stock-tag stock-error">🚫 Gagal Koneksi</span>
+                    <div style="margin-top:5px; font-size:0.8rem; color:red;">
+                        Tidak dapat menghubungi API Mitra.
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
